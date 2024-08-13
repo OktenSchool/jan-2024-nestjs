@@ -29,12 +29,7 @@ export class PostsListReqDto {
   })
   sort: string;
 
-  @ApiProperty({
-    example: 'id',
-    description: 'The field to order by',
-    required: false,
-  })
-  order: string;
+  order?: Order;
 
   @ApiProperty({
     example: 'id',
@@ -42,4 +37,9 @@ export class PostsListReqDto {
     required: false,
   })
   orderBy: string;
+}
+
+enum Order {
+  ASC = 'asc',
+  DESC = 'desc',
 }

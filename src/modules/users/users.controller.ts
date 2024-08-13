@@ -9,11 +9,13 @@ import {
   Req,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiCreatedResponse,
+  ApiConflictResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
-  ApiOkResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 import { CreateUserDto } from './dto/req/create-user.dto';
@@ -27,39 +29,49 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiCreatedResponse({ type: PrivateUserResDto })
   @Post()
   public async create(
     @Req() req: Request,
     @Body() dto: CreateUserDto,
-  ): Promise<any> {
+  ): Promise<PrivateUserResDto> {
     return await this.usersService.create(dto);
   }
 
   @ApiBearerAuth()
-  @ApiOkResponse({ type: PrivateUserResDto })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiConflictResponse({ description: 'Conflict' })
   @Get('me')
-  public async findMe(): Promise<any> {
+  public async findMe(): Promise<PrivateUserResDto> {
     return await this.usersService.findMe(1);
   }
 
   @ApiBearerAuth()
-  @ApiOkResponse({ type: PrivateUserResDto })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiConflictResponse({ description: 'Conflict' })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   @Patch('me')
-  public async updateMe(@Body() dto: UpdateUserDto): Promise<any> {
+  public async updateMe(
+    @Body() dto: UpdateUserDto,
+  ): Promise<PrivateUserResDto> {
     return await this.usersService.updateMe(1, dto);
   }
 
   @ApiBearerAuth()
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiConflictResponse({ description: 'Conflict' })
   @ApiNoContentResponse({ description: 'User has been removed' })
   @Delete('me')
-  public async removeMe(): Promise<any> {
+  public async removeMe(): Promise<void> {
     return await this.usersService.removeMe(1);
   }
 
-  @ApiOkResponse({ type: PublicUserResDto })
   @Get(':userId')
-  public async findOne(@Param('userId') userId: string): Promise<any> {
+  public async findOne(
+    @Param('userId') userId: string,
+  ): Promise<PublicUserResDto> {
     return await this.usersService.findOne(+userId);
   }
 }
