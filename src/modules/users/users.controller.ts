@@ -29,6 +29,7 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   @Post()
   public async create(
     @Req() req: Request,
