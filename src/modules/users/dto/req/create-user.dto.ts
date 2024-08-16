@@ -2,20 +2,17 @@ import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsEmail,
-  IsInt,
   IsNotIn,
-  IsNumber,
   IsOptional,
   IsString,
   Length,
   Matches,
-  Max,
-  Min,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
 
 import { TransformHelper } from '../../../../common/helpers/transform.helper';
+import { AgeValid } from '../../decorators/age-valid.decorator';
 
 class CreateCarDto {
   @Transform(TransformHelper.trim)
@@ -48,13 +45,8 @@ export class CreateUserDto {
   })
   public readonly password: string;
 
-  @Type(() => Number)
-  @IsInt()
-  @IsNumber()
-  @Max(120)
-  @Min(15)
-  @IsOptional()
-  public readonly age?: number;
+  @AgeValid()
+  public readonly age: number;
 
   @Transform(TransformHelper.trim)
   @IsString()

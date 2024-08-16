@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -64,6 +66,7 @@ export class UsersController {
   @ApiForbiddenResponse({ description: 'Forbidden' })
   @ApiConflictResponse({ description: 'Conflict' })
   @ApiNoContentResponse({ description: 'User has been removed' })
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('me')
   public async removeMe(): Promise<void> {
     return await this.usersService.removeMe(1);
