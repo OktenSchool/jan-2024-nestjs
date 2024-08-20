@@ -15,4 +15,9 @@ export default () => ({
     host: process.env.REDIS_HOST,
     password: process.env.REDIS_PASSWORD,
   },
+  sentry: {
+    dsn: process.env.SENTRY_DSN,
+    env: process.env.SENTRY_ENV,
+    debug: process.env.SENTRY_DEBUG === 'true',
+  },
 });

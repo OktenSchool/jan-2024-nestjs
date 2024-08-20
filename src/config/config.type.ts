@@ -2,6 +2,7 @@ export type Config = {
   app: AppConfig;
   postgres: PostgresConfig;
   redis: RedisConfig;
+  sentry: SentryConfig;
 };
 
 export type AppConfig = {
@@ -21,4 +22,10 @@ export type RedisConfig = {
   port: number;
   host: string;
   password: string;
+};
+
+export type SentryConfig = {
+  dsn: string;
+  env: string;
+  debug: boolean;
 };
