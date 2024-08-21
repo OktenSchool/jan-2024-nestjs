@@ -7,6 +7,7 @@ import configuration from '../config/configuration';
 import { LoggerModule } from './logger/logger.module';
 import { PostgresModule } from './postgres/postgres.module';
 import { PostsModule } from './posts/posts.module';
+import { RepositoryModule } from './repository/repository.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -19,6 +20,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     PostsModule,
     LoggerModule,
+    RepositoryModule,
   ],
   providers: [
     {
