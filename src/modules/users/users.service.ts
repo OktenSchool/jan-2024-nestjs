@@ -16,11 +16,9 @@ export class UsersService {
 
   public async create(createUserDto: CreateUserDto): Promise<any> {
     this.carsService.create({});
-    return await this.userRepository.save({
-      name: 'John Doe',
-      email: 'test.@test.com',
-      password: 'password123',
-    });
+    return await this.userRepository.save(
+      this.userRepository.create(createUserDto),
+    );
   }
 
   public async findAll(): Promise<any> {
