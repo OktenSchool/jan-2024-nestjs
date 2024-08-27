@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 import { RefreshTokenRepository } from '../../repository/services/refresh-token.repository';
@@ -47,7 +47,44 @@ export class AuthService {
     return { user, tokens };
   }
 
-  public async signIn(dto: SignInReqDto): Promise<any> {
-    // return await this.userRepository.findOne(dto);
+  public async signIn(dto: SignInReqDto): Promise<AuthResDto> {
+    const user = await this.userRepository.findOne({
+      where: { email: dto.email },
+      select: { id: true, password: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    const isPasswordValid = bcrypt.compare(dto.password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException();
+    }
+    const tokens = await this.tokenService.generateAuthTokens({
+      userId: user.id,
+      deviceId: dto.deviceId,
+    });
+
+    await Promise.all([
+      this.refreshTokenRepository.delete({
+        deviceId: dto.deviceId,
+        user_id: user.id,
+      }),
+      this.authCacheService.deleteToken(user.id, dto.deviceId),
+    ]);
+
+    await Promise.all([
+      this.refreshTokenRepository.save({
+        deviceId: dto.deviceId,
+        refreshToken: tokens.refreshToken,
+        user_id: user.id,
+      }),
+      this.authCacheService.saveToken(
+        tokens.accessToken,
+        user.id,
+        dto.deviceId,
+      ),
+    ]);
+    const userEntity = await this.userRepository.findOneBy({ id: user.id });
+    return { user: userEntity, tokens };
   }
 }
