@@ -5,9 +5,9 @@ export class BaseUserResDto {
 
   email: string;
 
-  age?: number;
+  bio?: string;
 
-  phone?: string;
+  image?: string;
 
   createdAt: Date;
 

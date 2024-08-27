@@ -1,10 +1,15 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 
-@Entity('users')
-export class UserEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+import { ArticleEntity } from './article.entity';
+import { CommentEntity } from './comment.entity';
+import { TableNameEnum } from './enums/table-name.enum';
+import { FollowEntity } from './follow.entity';
+import { LikeEntity } from './like.entity';
+import { CreateUpdateModel } from './models/create-update.model';
+import { RefreshTokenEntity } from './refresh-token.entity';
 
+@Entity(TableNameEnum.USERS)
+export class UserEntity extends CreateUpdateModel {
   @Column('text')
   name: string;
 
@@ -15,11 +20,26 @@ export class UserEntity {
   password: string;
 
   @Column('text', { nullable: true })
-  phone: string;
+  bio?: string;
 
-  @Column('int')
-  age: number;
+  @Column('text', { nullable: true })
+  image?: string;
 
-  @Column('boolean', { default: false })
-  isVerified: boolean;
+  @OneToMany(() => LikeEntity, (entity) => entity.user)
+  likes?: LikeEntity[];
+
+  @OneToMany(() => CommentEntity, (entity) => entity.user)
+  comments?: CommentEntity[];
+
+  @OneToMany(() => ArticleEntity, (entity) => entity.user)
+  articles?: ArticleEntity[];
+
+  @OneToMany(() => RefreshTokenEntity, (entity) => entity.user)
+  refreshTokens?: RefreshTokenEntity[];
+
+  @OneToMany(() => FollowEntity, (entity) => entity.followers)
+  followers?: FollowEntity[];
+
+  @OneToMany(() => FollowEntity, (entity) => entity.followings)
+  followings?: FollowEntity[];
 }

@@ -6,9 +6,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
-  Post,
-  Req,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -20,10 +19,12 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
-import { CreateUserDto } from './dto/req/create-user.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { SkipAuth } from '../auth/decorators/skip-auth.decorator';
+import { IUserData } from '../auth/interfaces/user-data.interface';
 import { UpdateUserDto } from './dto/req/update-user.dto';
-import { PrivateUserResDto } from './dto/res/private-user.res.dto';
-import { PublicUserResDto } from './dto/res/public-user.res.dto';
+import { UserResDto } from './dto/res/user.res.dto';
+import { UserMapper } from './user.mapper';
 import { UsersService } from './users.service';
 
 @ApiTags('Users')
@@ -31,22 +32,14 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiBadRequestResponse({ description: 'Bad Request' })
-  @Post()
-  public async create(
-    @Req() req: Request,
-    @Body() dto: CreateUserDto,
-  ): Promise<PrivateUserResDto> {
-    return await this.usersService.create(dto);
-  }
-
   @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiForbiddenResponse({ description: 'Forbidden' })
   @ApiConflictResponse({ description: 'Conflict' })
   @Get('me')
-  public async findMe(): Promise<PrivateUserResDto> {
-    return await this.usersService.findMe(1);
+  public async findMe(@CurrentUser() userData: IUserData): Promise<UserResDto> {
+    const result = await this.usersService.findMe(userData);
+    return UserMapper.toResponseDTO(result);
   }
 
   @ApiBearerAuth()
@@ -55,9 +48,7 @@ export class UsersController {
   @ApiConflictResponse({ description: 'Conflict' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   @Patch('me')
-  public async updateMe(
-    @Body() dto: UpdateUserDto,
-  ): Promise<PrivateUserResDto> {
+  public async updateMe(@Body() dto: UpdateUserDto): Promise<UserResDto> {
     return await this.usersService.updateMe(1, dto);
   }
 
@@ -72,10 +63,11 @@ export class UsersController {
     return await this.usersService.removeMe(1);
   }
 
+  @SkipAuth()
   @Get(':userId')
   public async findOne(
-    @Param('userId') userId: string,
-  ): Promise<PublicUserResDto> {
+    @Param('userId', ParseUUIDPipe) userId: string,
+  ): Promise<UserResDto> {
     return await this.usersService.findOne(+userId);
   }
 }
