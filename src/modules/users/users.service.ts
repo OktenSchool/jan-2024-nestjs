@@ -5,7 +5,6 @@ import { IUserData } from '../auth/interfaces/user-data.interface';
 import { LoggerService } from '../logger/logger.service';
 import { PostsService } from '../posts/posts.service';
 import { UserRepository } from '../repository/services/user.repository';
-import { UpdateUserDto } from './dto/req/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -23,11 +22,10 @@ export class UsersService {
     return await this.userRepository.findOneBy({ id: userData.userId });
   }
 
-  public async updateMe(
-    id: number,
-    updateUserDto: UpdateUserDto,
-  ): Promise<any> {
-    return `This action updates a #${id} user`;
+  public async updateMe(userData: IUserData, dto: any): Promise<UserEntity> {
+    const user = await this.userRepository.findOneBy({ id: userData.userId });
+    this.userRepository.merge(user, dto);
+    return await this.userRepository.save(user);
   }
 
   public async removeMe(id: number): Promise<any> {
