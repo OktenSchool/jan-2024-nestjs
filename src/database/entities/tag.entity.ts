@@ -6,7 +6,7 @@ import { CreateUpdateModel } from './models/create-update.model';
 
 @Entity(TableNameEnum.TAGS)
 export class TagEntity extends CreateUpdateModel {
-  @Column('text')
+  @Column('text', { unique: true })
   name: string;
 
   @ManyToMany(() => ArticleEntity, (entity) => entity.tags)
