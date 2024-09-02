@@ -6,6 +6,7 @@ import { TagEntity } from '../../../database/entities/tag.entity';
 import { IUserData } from '../../auth/interfaces/user-data.interface';
 import { ArticleRepository } from '../../repository/services/article.repository';
 import { TagRepository } from '../../repository/services/tag.repository';
+import { ArticleListQueryDto } from '../dto/req/article-list.query.dto';
 import { CreateArticleReqDto } from '../dto/req/create-article.req.dto';
 import { UpdateArticleReqDto } from '../dto/req/update-article.req.dto';
 
@@ -15,6 +16,13 @@ export class ArticleService {
     private readonly tagRepository: TagRepository,
     private readonly articleRepository: ArticleRepository,
   ) {}
+
+  public async getList(
+    userData: IUserData,
+    query: ArticleListQueryDto,
+  ): Promise<[ArticleEntity[], number]> {
+    return await this.articleRepository.getList(userData.userId, query);
+  }
 
   public async create(
     userData: IUserData,

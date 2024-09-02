@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiNotFoundResponse,
@@ -8,18 +16,30 @@ import {
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { IUserData } from '../auth/interfaces/user-data.interface';
+import { ArticleListQueryDto } from './dto/req/article-list.query.dto';
 import { CreateArticleReqDto } from './dto/req/create-article.req.dto';
 import { UpdateArticleReqDto } from './dto/req/update-article.req.dto';
 import { ArticleResDto } from './dto/res/article.res.dto';
+import { ArticleListResDto } from './dto/res/article-list.res.dto';
 import { ArticleMapper } from './services/article.mapper';
 import { ArticleService } from './services/article.service';
 
+@ApiBearerAuth()
 @ApiTags('Article')
 @Controller('articles')
 export class ArticleController {
   constructor(private readonly service: ArticleService) {}
 
-  @ApiBearerAuth()
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @Get()
+  public async getList(
+    @CurrentUser() userData: IUserData,
+    @Query() query: ArticleListQueryDto,
+  ): Promise<ArticleListResDto> {
+    const [entities, total] = await this.service.getList(userData, query);
+    return ArticleMapper.toResponseListDTO(entities, total, query);
+  }
+
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @Post()
   public async create(
@@ -30,7 +50,6 @@ export class ArticleController {
     return ArticleMapper.toResponseDTO(result);
   }
 
-  @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiNotFoundResponse({ description: 'Not Found' })
   @Patch(':articleId')
