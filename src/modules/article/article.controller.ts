@@ -52,6 +52,17 @@ export class ArticleController {
 
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiNotFoundResponse({ description: 'Not Found' })
+  @Get(':articleId')
+  public async getById(
+    @CurrentUser() userData: IUserData,
+    @Param('articleId') articleId: string,
+  ): Promise<ArticleResDto> {
+    const result = await this.service.getById(userData, articleId);
+    return ArticleMapper.toResponseDTO(result);
+  }
+
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'Not Found' })
   @Patch(':articleId')
   public async update(
     @CurrentUser() userData: IUserData,

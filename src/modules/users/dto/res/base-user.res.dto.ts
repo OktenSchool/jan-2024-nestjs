@@ -12,4 +12,6 @@ export class BaseUserResDto {
   createdAt: Date;
 
   updatedAt: Date;
+
+  isFollowed: boolean;
 }

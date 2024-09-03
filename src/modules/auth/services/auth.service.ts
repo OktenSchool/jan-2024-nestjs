@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 
 import { RefreshTokenRepository } from '../../repository/services/refresh-token.repository';
 import { UserRepository } from '../../repository/services/user.repository';
+import { UserMapper } from '../../users/user.mapper';
 import { UsersService } from '../../users/users.service';
 import { SignInReqDto } from '../dto/req/sign-in.req.dto';
 import { SignUpReqDto } from '../dto/req/sign-up.req.dto';
@@ -46,7 +47,7 @@ export class AuthService {
         dto.deviceId,
       ),
     ]);
-    return { user, tokens };
+    return { user: UserMapper.toResponseDTO(user), tokens };
   }
 
   public async signIn(dto: SignInReqDto): Promise<AuthResDto> {
@@ -87,7 +88,7 @@ export class AuthService {
       ),
     ]);
     const userEntity = await this.userRepository.findOneBy({ id: user.id });
-    return { user: userEntity, tokens };
+    return { user: UserMapper.toResponseDTO(userEntity), tokens };
   }
 
   public async refresh(userData: IUserData): Promise<TokenPairResDto> {

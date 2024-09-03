@@ -1,4 +1,5 @@
 import { ArticleEntity } from '../../../database/entities/article.entity';
+import { UserMapper } from '../../users/user.mapper';
 import { ArticleListQueryDto } from '../dto/req/article-list.query.dto';
 import { ArticleResDto } from '../dto/res/article.res.dto';
 import { ArticleListResDto } from '../dto/res/article-list.res.dto';
@@ -26,6 +27,7 @@ export class ArticleMapper {
       description: entity.description,
       created: entity.created,
       tags: entity.tags.map((tag) => tag.name),
+      user: UserMapper.toResponseDTO(entity.user),
     };
   }
 
@@ -38,6 +40,7 @@ export class ArticleMapper {
       created: entity.created,
       updated: entity.updated,
       tags: entity.tags.map((tag) => tag.name),
+      user: UserMapper.toResponseDTO(entity.user),
     };
   }
 }
