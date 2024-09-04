@@ -27,6 +27,7 @@ export class ArticleMapper {
       description: entity.description,
       created: entity.created,
       tags: entity.tags.map((tag) => tag.name),
+      isLiked: entity.likes?.length > 0,
       user: UserMapper.toResponseDTO(entity.user),
     };
   }
@@ -40,6 +41,7 @@ export class ArticleMapper {
       created: entity.created,
       updated: entity.updated,
       tags: entity.tags.map((tag) => tag.name),
+      isLiked: entity.likes?.length > 0,
       user: UserMapper.toResponseDTO(entity.user),
     };
   }

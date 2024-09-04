@@ -10,5 +10,6 @@ export class ArticleResDto extends PickType(BaseArticleResDto, [
   'created',
   'updated',
   'tags',
+  'isLiked',
   'user',
 ]) {}

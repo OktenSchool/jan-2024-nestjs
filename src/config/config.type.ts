@@ -44,5 +44,6 @@ export type AwsConfig = {
   accessKeyId: string;
   secretAccessKey: string;
   bucketName: string;
+  bucketUrl: string;
   endpoint: string;
 };
