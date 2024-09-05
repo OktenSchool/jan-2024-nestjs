@@ -3,14 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { In } from 'typeorm';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager, In } from 'typeorm';
 
 import { ArticleEntity } from '../../../database/entities/article.entity';
 import { TagEntity } from '../../../database/entities/tag.entity';
 import { IUserData } from '../../auth/interfaces/user-data.interface';
 import { ArticleRepository } from '../../repository/services/article.repository';
 import { LikeRepository } from '../../repository/services/like.repository';
-import { TagRepository } from '../../repository/services/tag.repository';
 import { ArticleListQueryDto } from '../dto/req/article-list.query.dto';
 import { CreateArticleReqDto } from '../dto/req/create-article.req.dto';
 import { UpdateArticleReqDto } from '../dto/req/update-article.req.dto';
@@ -18,9 +18,10 @@ import { UpdateArticleReqDto } from '../dto/req/update-article.req.dto';
 @Injectable()
 export class ArticleService {
   constructor(
-    private readonly tagRepository: TagRepository,
     private readonly articleRepository: ArticleRepository,
     private readonly likeRepository: LikeRepository,
+    @InjectEntityManager()
+    private readonly entityManager: EntityManager,
   ) {}
 
   public async getList(
@@ -34,15 +35,22 @@ export class ArticleService {
     userData: IUserData,
     dto: CreateArticleReqDto,
   ): Promise<ArticleEntity> {
-    const tags = await this.createTags(dto.tags);
+    return await this.entityManager.transaction('SERIALIZABLE', async (em) => {
+      const articleRepository = em.getRepository(ArticleEntity);
+      const tags = await this.createTags(dto.tags, em);
 
-    return await this.articleRepository.save(
-      this.articleRepository.create({
-        ...dto,
-        user_id: userData.userId,
-        tags,
-      }),
-    );
+      await this.articleRepository.getById('sdg', 'sdf', em);
+      // console.log(tags)
+      // throw new Error('sdf');
+
+      return await articleRepository.save(
+        this.articleRepository.create({
+          ...dto,
+          user_id: userData.userId,
+          tags,
+        }),
+      );
+    });
   }
 
   public async getById(
@@ -105,14 +113,18 @@ export class ArticleService {
     }
   }
 
-  private async createTags(tags: string[]): Promise<TagEntity[]> {
+  private async createTags(
+    tags: string[],
+    em: EntityManager,
+  ): Promise<TagEntity[]> {
+    const tagRepository = em.getRepository(TagEntity);
     if (!tags || tags.length === 0) return [];
 
-    const entities = await this.tagRepository.findBy({ name: In(tags) });
+    const entities = await tagRepository.findBy({ name: In(tags) });
     const existingTags = entities.map((entity) => entity.name);
     const newTags = tags.filter((tag) => !existingTags.includes(tag));
-    const newEntities = await this.tagRepository.save(
-      newTags.map((tag) => this.tagRepository.create({ name: tag })),
+    const newEntities = await tagRepository.save(
+      newTags.map((tag) => tagRepository.create({ name: tag })),
     );
     return [...entities, ...newEntities];
   }
