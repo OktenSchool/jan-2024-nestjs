@@ -1,13 +1,9 @@
-import { IsOptional } from 'class-validator';
+import { PickType } from '@nestjs/swagger';
 
-import { AgeValid } from '../../decorators/age-valid.decorator';
+import { BaseUserReqDto } from './base-user.req.dto';
 
-export class UpdateUserDto {
-  name?: string;
-
-  @AgeValid()
-  @IsOptional()
-  public readonly age?: number;
-
-  phone?: string;
-}
+export class UpdateUserDto extends PickType(BaseUserReqDto, [
+  'bio',
+  'name',
+  'image',
+]) {}

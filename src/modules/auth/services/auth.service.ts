@@ -3,10 +3,13 @@ import * as bcrypt from 'bcrypt';
 
 import { RefreshTokenRepository } from '../../repository/services/refresh-token.repository';
 import { UserRepository } from '../../repository/services/user.repository';
+import { UserMapper } from '../../users/user.mapper';
 import { UsersService } from '../../users/users.service';
 import { SignInReqDto } from '../dto/req/sign-in.req.dto';
 import { SignUpReqDto } from '../dto/req/sign-up.req.dto';
 import { AuthResDto } from '../dto/res/auth.res.dto';
+import { TokenPairResDto } from '../dto/res/token-pair.res.dto';
+import { IUserData } from '../interfaces/user-data.interface';
 import { AuthCacheService } from './auth-cache.service';
 import { TokenService } from './token.service';
 
@@ -44,7 +47,7 @@ export class AuthService {
         dto.deviceId,
       ),
     ]);
-    return { user, tokens };
+    return { user: UserMapper.toResponseDTO(user), tokens };
   }
 
   public async signIn(dto: SignInReqDto): Promise<AuthResDto> {
@@ -85,6 +88,46 @@ export class AuthService {
       ),
     ]);
     const userEntity = await this.userRepository.findOneBy({ id: user.id });
-    return { user: userEntity, tokens };
+    return { user: UserMapper.toResponseDTO(userEntity), tokens };
+  }
+
+  public async refresh(userData: IUserData): Promise<TokenPairResDto> {
+    await Promise.all([
+      this.refreshTokenRepository.delete({
+        deviceId: userData.deviceId,
+        user_id: userData.userId,
+      }),
+      this.authCacheService.deleteToken(userData.userId, userData.deviceId),
+    ]);
+
+    const tokens = await this.tokenService.generateAuthTokens({
+      userId: userData.userId,
+      deviceId: userData.deviceId,
+    });
+
+    await Promise.all([
+      this.refreshTokenRepository.save({
+        deviceId: userData.deviceId,
+        refreshToken: tokens.refreshToken,
+        user_id: userData.userId,
+      }),
+      this.authCacheService.saveToken(
+        tokens.accessToken,
+        userData.userId,
+        userData.deviceId,
+      ),
+    ]);
+
+    return tokens;
+  }
+
+  public async signOut(userData: IUserData): Promise<void> {
+    await Promise.all([
+      this.refreshTokenRepository.delete({
+        deviceId: userData.deviceId,
+        user_id: userData.userId,
+      }),
+      this.authCacheService.deleteToken(userData.userId, userData.deviceId),
+    ]);
   }
 }
